@@ -29,5 +29,46 @@ sudo mv linux-amd64/helm /usr/local/bin/helm
 ```
 helm
 ```
+7.
+```
+helm repo add stable https://charts.helm.sh/stable
+
+```
 https://devopscube.com/install-configure-helm-kubernetes/
+
+## lstio
+https://istio.io/latest/docs/setup/getting-started/
+1.
+```
+curl -L https://istio.io/downloadIstio | sh -
+
+```
+2.
+```
+cd istio-1.13.2
+```
+3.
+```
+istioctl install --set profile=demo -y
+
+✔ Istio core installed                                                          
+✔ Istiod installed                                                              
+✔ Ingress gateways installed                                                    
+✔ Egress gateways installed                                                     
+✔ Installation complete                                                        
+Making this installation the default for injection and validation.
+
+Thank you for installing Istio 1.13.  Please take a few minutes to tell us about your install/upgrade experience!  https://forms.gle/pzWZpAvMVBecaQ9h9
+
+```
+4.
+```
+kubectl label namespace default istio-injection=enabled
+```
+## Grafana
+
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/grafana.yaml
+## prometheus
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/prometheus.yaml
+
 
