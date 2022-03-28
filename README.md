@@ -65,10 +65,14 @@ Thank you for installing Istio 1.13.  Please take a few minutes to tell us about
 ```
 kubectl label namespace default istio-injection=enabled
 ```
+https://istio.io/latest/docs/tasks/observability/metrics/using-istio-dashboard/
 ## Grafana
-
+```
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/grafana.yaml
+```
 ## prometheus
+```
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/prometheus.yaml
+```
 
 
