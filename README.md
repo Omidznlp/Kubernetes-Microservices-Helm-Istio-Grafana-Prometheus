@@ -49,6 +49,11 @@ cd istio-1.13.2
 ```
 3.
 ```
+export PATH=$PWD/bin:$PATH
+
+```
+3.
+```
 istioctl install --set profile=demo -y
 
 ✔ Istio core installed                                                          
