@@ -87,5 +87,9 @@ INSTALLATION FAILED
 main.newInstallCmd.func2
 
 ```
-sudo apt install build-essential make openssl libssl-dev zlib1g-dev apt-get install luarocks
+sudo apt install build-essential make openssl libssl-dev zlib1g-dev luarocks
+```
+luarocks install luasocket
+```
+
 ```
