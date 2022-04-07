@@ -86,3 +86,6 @@ helm.go:84: [debug] failed post-install: warning: Hook post-install social-netwo
 INSTALLATION FAILED
 main.newInstallCmd.func2
 
+```
+sudo apt install build-essential make
+```
