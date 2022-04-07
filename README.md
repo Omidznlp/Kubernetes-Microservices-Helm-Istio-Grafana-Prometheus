@@ -1,15 +1,34 @@
 # Kubernetes-Microservices-Helm-Istio
 # Microservices 
-I employed Open-source benchmark for cloud microservices called DeathStarBench includes five end-to-end services, four for cloud systems, \
-and one for cloud-edge systems running on drone swarms. In this repository, Social Network end to end service is considered to run on google\ cloud Platform. For more information about the benchmeack please follow the link:\
+I employed an open-source benchmark for cloud microservices called DeathStarBench, which includes five end-to-end services, four for cloud \ systems, and one for cloud-edge systems running on drone swarms. The social networking end-to-end service is assumed to run on Google Cloud\ Platform in this repository.For more information about the benchmeack, please follow the link:\
 ```
 https://github.com/delimitrou/DeathStarBench
 
 ```
-# Social Network Microservices
+## Social Network Microservices
 
-A social network with unidirectional follow relationships, implemented with loosely-coupled microservices, communicating with each other via Thrift RPCs.
+A social network with unidirectional follow relationships built with loosely coupled microservices that communicate with one another via Thrift RPCs.
 
+### Application Structure
+![microservice](https://user-images.githubusercontent.com/87664653/162190639-44f4ae4e-6fbc-4cf4-9158-f333ecfc0723.png)
+
+To run microservices on GCP, follow the steps outlined below.
+
+1. If you do not have a GCP account, please open one on GCP.
+
+2. Set up Docker and the Kubernetes cluster nodes on Google Cloud Platform.
+
+3. Attach the helm
+
+4. Setup Grafana/Prometheus
+
+5. Set up Istio
+
+6. Execute Microservices
+
+7. Grafana/Prometheus monitoring
+
+## Install kuberentes on Google cloud platform (GCP)
 1.
 Download Microservice 
 ```
