@@ -471,6 +471,11 @@ See the ip addresss of Social media App. (the nginx-thrift service on port 8080)
 ```
 kubectl get services
 ```
+![see ip address](https://user-images.githubusercontent.com/87664653/162442193-02fdc954-c576-446e-b69c-e0bdcce35492.png)
+
+![deathstart](https://user-images.githubusercontent.com/87664653/162442072-f728e43c-e294-470c-bafb-ec0388c15488.png)
+
+![deathstar_in](https://user-images.githubusercontent.com/87664653/162442086-dc9e63f1-e00b-4437-9574-08e6e8a9340f.png)
 
 ## Run grafana Dashboard
 Open the master node in remote desktop mode and
@@ -505,6 +510,10 @@ make
 ## Monitoring 
 
 Choose the nginx-thrift service for monitoring.
+![service](https://user-images.githubusercontent.com/87664653/162442391-971410ec-aa4b-4727-802c-c6c31afa5672.png)
+
+![grafana](https://user-images.githubusercontent.com/87664653/162441959-f56f1af6-e15e-444f-ac9c-8d24041d5d13.png)
+
 
 ## Troubelshooting 
 If the following error happens in the helm install step:
