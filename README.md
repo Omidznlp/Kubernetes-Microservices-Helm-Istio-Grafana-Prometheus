@@ -1,6 +1,6 @@
 # Kubernetes-Microservices-Helm-Istio-Grafan-Prometheus
 # Microservices 
-I employed an open-source benchmark for cloud microservices called DeathStarBench, which includes five end-to-end services, four for cloud  systems, and one for cloud-edge systems running on drone swarms. The social networking end-to-end service is assumed to run on Google Cloud Platform in this repository.For more information about the benchmeack, please follow the link: \
+I used an open-source benchmark for cloud microservices called DeathStarBench, which includes five end-to-end services, four for cloud  systems, and one for cloud-edge systems running on drone swarms. The social networking end-to-end service is assumed to run on Google Cloud Platform in this repository.For more information about the benchmeack, please follow the link:
 
 https://github.com/delimitrou/DeathStarBench
 
@@ -27,7 +27,137 @@ To run microservices on GCP, follow the steps outlined below.
 
 7. Grafana/Prometheus monitoring
 
-## Install kuberentes on Google cloud platform (GCP)
+## Create a Kubernetes cluster (master node and workers) on the Google Cloud Platform (GCP).
+
+1. Create a new project on GCP.Therefore, I created a project called "Kubernetes". If you do not know how to create a project, please follow the following link:\
+https://cloud.google.com/resource-manager/docs/creating-managing-projects
+
+2. To run gcloud commands which will be mentioned in the next steps, there are some options:
+
+3. cloud shell on GCP (this is the one I used).
+4. Downloading and installing the gcloud CLI on your host. follow the link if you prefer to install gcloud cli on your own machine and run the gcloud commands:
+https://cloud.google.com/sdk/docs/install
+
+5. Click the "activate cloud shell" button, and then run commands in the shell.
+
+6. Set ProjectID in gcloud for example: kubernetes-342214.
+
+    How to find Project ID:
+    https://support.google.com/googleapi/answer/7014113?hl=en
+
+    ```
+    gcloud config set project <your_ProjectID>
+
+    ```
+    Example:
+    ```
+    gcloud config set project kubernetes-342214
+    ```
+
+7. Set the zone property in the compute section
+    ```
+    gcloud config set compute/zone <zone name >
+    ```
+    Exmaple:
+    ```
+     gcloud config set compute/zone us-central1-a
+    ```
+    How to find the available regions and zones:
+    https://cloud.google.com/compute/docs/regions-zones#:~:text=You%20can%20use%20the%20Google,a%20specific%20region%20or%20zone.
+
+
+8. Build the VPC
+    ```
+    gcloud compute networks create k8s-cluster --subnet-mode custom
+    ```
+
+
+9. In the k8s-cluster VPC network, create the k8s-nodes subnet. To set IP ranges, go to the VPC network section on GCP to find subnets, or please follow the link to find your region's IP address. For example, the address of us-central1 is 10.128.0.0/20:
+https://cloud.google.com/vpc/docs/subnets
+    ```
+    gcloud compute networks subnets create k8s-nodes --network k8s-cluster --range <your region's IP address>
+    ```
+    Example:
+    ```
+    gcloud compute networks subnets create k8s-nodes --network k8s-cluster --range 10.128.0.0/24
+    ```
+
+10. Set a firewall rule that enables internal communication through TCP, UDP, ICMP, and IP.
+    ```
+    gcloud compute firewall-rules create k8s-cluster-allow-internal \
+      --allow tcp,udp,icmp,ipip \
+      --network k8s-cluster \
+      --source-ranges <your region's IP address>
+    ```
+    Example
+    ```
+    gcloud compute firewall-rules create k8s-cluster-allow-internal \
+      --allow tcp,udp,icmp,ipip \
+      --network k8s-cluster \
+      --source-ranges 10.128.0.0/11
+    ```
+
+11. Make a firewall rule that enables external SSH, ICMP, and HTTPS connections.
+    ```
+    gcloud compute firewall-rules create k8s-cluster-allow-external \
+      --allow tcp:22,tcp:6443,icmp \
+      --network k8s-cluster \
+      --source-ranges 0.0.0.0/0
+    ```
+
+12. Create a Master Node Instance on GCP:
+    ```
+    gcloud compute instances create master-node \
+        --async \
+        --boot-disk-size 100GB \
+        --can-ip-forward \
+        --image-family ubuntu-1804-lts \
+        --image-project ubuntu-os-cloud \
+        --machine-type n1-standard-2 \
+        --private-network-ip 10.128.0.11 \
+        --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
+        --subnet k8s-nodes \
+        --zone us-central1-a \
+        --tags k8s-cluster,master-node,controller
+    ```
+13. Create Two worker Instances on GCP:
+    ```
+    for i in 0 1; do
+      gcloud compute instances create workernode-${i} \
+        --async \
+        --boot-disk-size 100GB \
+        --can-ip-forward \
+        --image-family ubuntu-1804-lts \
+        --image-project ubuntu-os-cloud \
+        --machine-type n1-standard-2 \
+        --private-network-ip 10.128.0.2${i} \
+        --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
+        --subnet k8s-nodes \
+        --zone us-central1-a \
+        --tags k8s-cluster,worker
+    done
+    ```
+
+## Install Docker and kuberentes on Google cloud platform (GCP)
+
+
+13. On Worker Nodes Execute the Join Command
+
+
+14. Verify the Cluster Status
+
+kubectl get nodes
+
+
+15. On the controller, install Calico from the manifest:
+
+curl https://docs.projectcalico.org/manifests/calico.yaml -O
+
+kubectl apply -f calico.yaml 
+
+```
+
+
 1.
 Download Microservice 
 ```
