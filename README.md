@@ -137,65 +137,263 @@ https://cloud.google.com/vpc/docs/subnets
         --tags k8s-cluster,worker
     done
     ```
-
 ## Install Docker and kuberentes on Google cloud platform (GCP)
 
+Connect to the master and worker nodes via ssh.
+How to connect via ssh:\
+https://cloud.google.com/compute/docs/instances/connecting-to-instance
 
-13. On Worker Nodes Execute the Join Command
+### Docker Installation on Master and Workers nodes
 
+Install Docker on the master and worker nodes.\
 
-14. Verify the Cluster Status
+1. Update pakages
 
-kubectl get nodes
+    ```
+    sudo apt-get update
+    ```
 
+2. Install dependencies
 
-15. On the controller, install Calico from the manifest:
+    ```
+    sudo apt-get install ca-certificates curl gnupg lsb-release    
+    ```
 
-curl https://docs.projectcalico.org/manifests/calico.yaml -O
+3. Add Docker’s official GPG key:
 
-kubectl apply -f calico.yaml 
+    ```
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    ```
 
-```
+4. Use the following command to set up the stable repository.
 
+    ```
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    ```
 
+5. Update the apt package index.
+
+    ```
+    sudo apt-get update
+    ```
+6. Install docker.
+
+    ```
+    sudo apt-get install docker-ce docker-ce-cli containerd.io
+    ```
+
+7. Enable docker service
+
+    ```
+    sudo systemctl enable docker 
+    ```
+
+8. Verfiy installation
+
+    ```
+    docker ––version
+    ```
+
+Read more information about the commands at the following link:
+
+<https://docs.docker.com/engine/install/ubuntu/>
+
+### kubernetes Installation on Master and Workers nodes
+
+Install kubernetes on the master and worker nodes.\
 1.
-Download Microservice 
 ```
-git clone https://github.com/delimitrou/DeathStarBench.git
-```
-Step 1: Head over to the Github helm release page and copy the Linux amd64 link for the required version.
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+br_netfilter
+EOF
 
-https://github.com/helm/helm/releases
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+```
+```
+sudo sysctl --system
+```
 2.
 ```
-wget -O helm.tar.gz  https://get.helm.sh/helm-v3.8.1-linux-amd64.tar.gz
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
 ```
 3.
 ```
-wget -O helm.tar.gz  https://get.helm.sh/helm-v3.8.1-linux-amd64.tar.gz
-
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 ```
 4.
 ```
-tar -zxvf helm.tar.gz
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
 ```
 5.
 ```
-sudo mv linux-amd64/helm /usr/local/bin/helm
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
 ```
 6.
 ```
-helm
+sudo swapoff -a
+sudo sed -i '/ swap / s/^/#/' /etc/fstab
+```
+7.Create this file "daemon.json" in the directory "/etc/docker" and add the following
+```
+{
+"exec-opts": ["native.cgroupdriver=systemd"]
+}
+```
+8.
+```
+sudo systemctl restart docker
+sudo kubeadm reset
+```
+
+### Kuberenetes Configuration on Master Node
+
+1.The following procedure should only be applied on the master node, and only the "kubeadm join" command should be executed on worker nodes.
+
+```
+sudo kubeadm init --pod-network-cidr=10.10.0.0/16 
+```
+Seeing the following lines at the terminal
+```
+[init] Using Kubernetes version: v1.23.5
+[preflight] Running pre-flight checks
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "ca" certificate and key
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [jenkins-agent kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 10.0.2.15]
+[certs] Generating "apiserver-kubelet-client" certificate and key
+[certs] Generating "front-proxy-ca" certificate and key
+[certs] Generating "front-proxy-client" certificate and key
+[certs] Generating "etcd/ca" certificate and key
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [jenkins-agent localhost] and IPs [10.0.2.15 127.0.0.1 ::1]
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [jenkins-agent localhost] and IPs [10.0.2.15 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "apiserver-etcd-client" certificate and key
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
+[apiclient] All control plane components are healthy after 10.509242 seconds
+[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[kubelet] Creating a ConfigMap "kubelet-config-1.23" in namespace kube-system with the configuration for the kubelets in the cluster
+NOTE: The "kubelet-config-1.23" naming of the kubelet ConfigMap is deprecated. Once the UnversionedKubeletConfigMap feature gate graduates to Beta the default name will become just "kubelet-config". Kubeadm upgrade will handle this transition transparently.
+[upload-certs] Skipping phase. Please see --upload-certs
+[mark-control-plane] Marking the node jenkins-agent as control-plane by adding the labels: [node-role.kubernetes.io/master(deprecated) node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]
+[mark-control-plane] Marking the node jenkins-agent as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+[bootstrap-token] Using token: qp794c.xbsi5nanw2u9sn9x
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes
+[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public" namespace
+[kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a rotatable kubelet client certificate and key
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+kubeadm join 10.128.0.11:6443 --token qp794c.xbsi5nanw2u9sn9x \
+	--discovery-token-ca-cert-hash sha256:355a4ca26e908ddc939b8476377f17d1133a80132eab7db07655f6fa2bacd6e2 
+
+```
+2.
+```
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+3.To deploy the Network model
+```
+sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+```
+The other network model can be found at the following link.\
+ 
+ https://kubernetes.io/docs/concepts/cluster-administration/networking/
+
+### Kuberenetes Configuration on Worker Nodes
+
+To join worker nodes to the cluster, please insert the following command in the worker nodes. (Please run your own command which is printed onscreen in the last step.) 
+
+```
+kubeadm join 10.128.0.11:6443 --token qp794c.xbsi5nanw2u9sn9x \
+	--discovery-token-ca-cert-hash sha256:355a4ca26e908ddc939b8476377f17d1133a80132eab7db07655f6fa2bacd6e2 
+```
+
+## Helm installation
+
+Head over to the Github helm release page and copy the Linux amd64 link for the required version.
+link:\
+<https://github.com/helm/helm/releases>
+1.
+```
+wget -O helm.tar.gz  https://get.helm.sh/helm-v3.8.1-linux-amd64.tar.gz
+```
+2.
+```
+wget -O helm.tar.gz  https://get.helm.sh/helm-v3.8.1-linux-amd64.tar.gz
+
+```
+3.
+```
+tar -zxvf helm.tar.gz
+```
+4.
+```
+sudo mv linux-amd64/helm /usr/local/bin/helm
+```
+
+5.verify helm installation
+
+```
+helm version 
 ```
 7.
 ```
 helm repo add stable https://charts.helm.sh/stable
 
 ```
-https://devopscube.com/install-configure-helm-kubernetes/
 
-## lstio
-https://istio.io/latest/docs/setup/getting-started/
+## Istio Installation
+
 1.
 ```
 curl -L https://istio.io/downloadIstio | sh -
@@ -213,7 +411,8 @@ export PATH=$PWD/bin:$PATH
 3.
 ```
 istioctl install --set profile=demo -y
-
+```
+```
 ✔ Istio core installed                                                          
 ✔ Istiod installed                                                              
 ✔ Ingress gateways installed                                                    
@@ -229,6 +428,8 @@ Thank you for installing Istio 1.13.  Please take a few minutes to tell us about
 kubectl label namespace default istio-injection=enabled
 ```
 https://istio.io/latest/docs/tasks/observability/metrics/using-istio-dashboard/
+
+https://istio.io/latest/docs/setup/getting-started/
 ## Grafana
 ```
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/grafana.yaml
