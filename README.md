@@ -394,6 +394,8 @@ helm repo add stable https://charts.helm.sh/stable
 
 ## Istio Installation
 
+How to set up Istio: \
+<https://istio.io/latest/docs/setup/getting-started/>
 1.
 ```
 curl -L https://istio.io/downloadIstio | sh -
@@ -427,28 +429,95 @@ Thank you for installing Istio 1.13.  Please take a few minutes to tell us about
 ```
 kubectl label namespace default istio-injection=enabled
 ```
-https://istio.io/latest/docs/tasks/observability/metrics/using-istio-dashboard/
+For more information:
 
-https://istio.io/latest/docs/setup/getting-started/
-## Grafana
+<https://istio.io/latest/docs/tasks/observability/metrics/using-istio-dashboard/>
+
+<https://istio.io/latest/docs/setup/getting-started/>
+
+## Grafana Installation
+
 ```
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/grafana.yaml
 ```
-## prometheus
+## prometheus Installation
 ```
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/prometheus.yaml
 ```
 
+## Microservices Repository
 
+```
+git clone https://github.com/Omidznlp/DeathStarBench.git
+```
+## Install Microservices via Helm
+```
+cd DeathStarBench/socialNetwork/helm-chart
+```
+
+```
+helm install social-media socialnetwork/ --values socialnetwork/values.yaml
+```
+
+## Remote Desktop for Master node
+
+FYI:
+<https://ubuntu.com/blog/launch-ubuntu-desktop-on-google-cloud>
+
+## Death Star Social media
+
+See the ip addresss of Social media App. (the nginx-thrift service on port 8080)
+
+```
+kubectl get services
+```
+
+## Run grafana Dashboard
+Open the master node in remote desktop mode and
+run the following command.
+```
+cd istio-1.13.2
+```
+```
+istioctl dashboard grafana
+```
+The Grafana dashboard appears in the browser automatically.
+
+## Running HTTP workload generator
+
+```
+cd DeathStarBench/socialNetwork
+```
+```
+sudo apt install build-essential make openssl libssl-dev zlib1g-dev luarocks
+```
+```
+luarocks install luasocket
+```
+```
+cd wrk2
+make
+```
+```
+./wrk -D exp -t 3 -c 3 -d 100 -L -s ./scripts/social-network/compose-post.lua http://10.110.246.16:8080/wrk2-api/post/compose -R 10
+```
+
+## Monitoring 
+
+Choose the nginx-thrift service for monitoring.
+
+## Troubelshooting 
+If the following error happens in the helm install step:
+```
 Error: INSTALLATION FAILED: failed post-install: warning: Hook post-install social-network/templates/mongodb-sharded-init/post-install-hook.yaml failed: Internal error occurred: failed calling webhook "namespace.sidecar-injector.istio.io": failed to call webhook: Post "https://istiod.istio-system.svc:443/inject?timeout=10s": context deadline exceeded
 helm.go:84: [debug] failed post-install: warning: Hook post-install social-network/templates/mongodb-sharded-init/post-install-hook.yaml failed: Internal error occurred: failed calling webhook "namespace.sidecar-injector.istio.io": failed to call webhook: Post "https://istiod.istio-system.svc:443/inject?timeout=10s": context deadline exceeded
 INSTALLATION FAILED
 main.newInstallCmd.func2
 
 ```
-sudo apt install build-essential make openssl libssl-dev zlib1g-dev luarocks
-```
-luarocks install luasocket
-```
+Please insert following command:
 
+```
+cd istio-1.13.2
+export PATH=$PWD/bin:$PATH
 ```
