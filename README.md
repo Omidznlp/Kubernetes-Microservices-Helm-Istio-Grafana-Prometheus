@@ -1,5 +1,7 @@
 # Kubernetes-Microservices-Helm-Istio-Grafan-Prometheus
-# Microservices 
+
+## Microservices 
+
 I used an open-source benchmark for cloud microservices called DeathStarBench, which includes five end-to-end services, four for cloud  systems, and one for cloud-edge systems running on drone swarms. The social networking end-to-end service is assumed to run on Google Cloud Platform in this repository.For more information about the benchmeack, please follow the link:
 
 https://github.com/delimitrou/DeathStarBench
@@ -9,23 +11,24 @@ https://github.com/delimitrou/DeathStarBench
 A social network with unidirectional follow relationships built with loosely coupled microservices that communicate with one another via Thrift RPCs.
 
 ### Application Structure
+
 ![microservice](https://user-images.githubusercontent.com/87664653/162190639-44f4ae4e-6fbc-4cf4-9158-f333ecfc0723.png)
 
 To run microservices on GCP, follow the steps outlined below.
 
 1. If you do not have a GCP account, please open one on GCP.
+2. Set up master and worker nodes on GCP
+3. Set up Docker and the Kubernetes cluster nodes on GCP.
 
-2. Set up Docker and the Kubernetes cluster nodes on Google Cloud Platform.
+4. Attach the helm
 
-3. Attach the helm
+5. Setup Grafana/Prometheus
 
-4. Setup Grafana/Prometheus
+6. Set up Istio
 
-5. Set up Istio
+7. Execute Microservices
 
-6. Execute Microservices
-
-7. Grafana/Prometheus monitoring
+8. Grafana/Prometheus monitoring
 
 ## Create a Kubernetes cluster (master node and workers) on the Google Cloud Platform (GCP).
 
@@ -34,11 +37,11 @@ https://cloud.google.com/resource-manager/docs/creating-managing-projects
 
 2. To run gcloud commands which will be mentioned in the next steps, there are some options:
 
-3. cloud shell on GCP (this is the one I used).
-4. Downloading and installing the gcloud CLI on your host. follow the link if you prefer to install gcloud cli on your own machine and run the gcloud commands:
-https://cloud.google.com/sdk/docs/install
+    2.1 cloud shell on GCP (this is the one I used).\
+    2.2 Downloading and installing the gcloud CLI on your host. follow the link if you prefer to install gcloud cli on your own machine and run the gcloud commands:
+    https://cloud.google.com/sdk/docs/install
 
-5. Click the "activate cloud shell" button, and then run commands in the shell.
+5. Click the "activate cloud shell" button, and then run the following commands in the shell.
 
 6. Set ProjectID in gcloud for example: kubernetes-342214.
 
@@ -79,7 +82,7 @@ https://cloud.google.com/vpc/docs/subnets
     ```
     Example:
     ```
-    gcloud compute networks subnets create k8s-nodes --network k8s-cluster --range 10.128.0.0/24
+    gcloud compute networks subnets create k8s-nodes --network k8s-cluster --range 10.128.0.0/20
     ```
 
 10. Set a firewall rule that enables internal communication through TCP, UDP, ICMP, and IP.
@@ -94,7 +97,7 @@ https://cloud.google.com/vpc/docs/subnets
     gcloud compute firewall-rules create k8s-cluster-allow-internal \
       --allow tcp,udp,icmp,ipip \
       --network k8s-cluster \
-      --source-ranges 10.128.0.0/11
+      --source-ranges 10.128.0.11/20
     ```
 
 11. Make a firewall rule that enables external SSH, ICMP, and HTTPS connections.
@@ -137,6 +140,7 @@ https://cloud.google.com/vpc/docs/subnets
         --tags k8s-cluster,worker
     done
     ```
+
 ## Install Docker and kuberentes on Google cloud platform (GCP)
 
 Connect to the master and worker nodes via ssh.
@@ -255,7 +259,7 @@ sudo kubeadm reset
 
 ### Kuberenetes Configuration on Master Node
 
-1.The following procedure should only be applied on the master node, and only the "kubeadm join" command should be executed on worker nodes.
+1. The following procedure should only be applied on the master node, and only the "kubeadm join" command should be executed on worker nodes.
 
 ```
 sudo kubeadm init --pod-network-cidr=10.10.0.0/16 
@@ -335,13 +339,15 @@ kubeadm join 10.128.0.11:6443 --token qp794c.xbsi5nanw2u9sn9x \
 	--discovery-token-ca-cert-hash sha256:355a4ca26e908ddc939b8476377f17d1133a80132eab7db07655f6fa2bacd6e2 
 
 ```
-2.
+
+2. To start using your cluster, you need to run the following as a regular user
+
 ```
   mkdir -p $HOME/.kube
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
-3.To deploy the Network model
+3. To deploy the Network model
 ```
 sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 ```
@@ -394,8 +400,7 @@ helm repo add stable https://charts.helm.sh/stable
 
 ## Istio Installation
 
-How to set up Istio: \
-<https://istio.io/latest/docs/setup/getting-started/>
+
 1.
 ```
 curl -L https://istio.io/downloadIstio | sh -
@@ -430,9 +435,7 @@ Thank you for installing Istio 1.13.  Please take a few minutes to tell us about
 kubectl label namespace default istio-injection=enabled
 ```
 For more information:
-
-<https://istio.io/latest/docs/tasks/observability/metrics/using-istio-dashboard/>
-
+How to set up Istio: \
 <https://istio.io/latest/docs/setup/getting-started/>
 
 ## Grafana Installation
@@ -445,7 +448,7 @@ kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samp
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/prometheus.yaml
 ```
 
-## Microservices Repository
+## Download Microservices Repository
 
 ```
 git clone https://github.com/Omidznlp/DeathStarBench.git
@@ -461,9 +464,21 @@ helm install social-media socialnetwork/ --values socialnetwork/values.yaml
 
 ## Remote Desktop for Master node
 
-FYI:
-<https://ubuntu.com/blog/launch-ubuntu-desktop-on-google-cloud>
+There are two ways to run Dashboard in a browser:
 
+1. On the master node, install Chrome Remote Desktop (I used this one). Please follow the "Install Chrome Remote Desktop on the VM instance" section at the following link to run Chrome Remote Desktop on the master node.
+ 
+FYI: https://ubuntu.com/blog/launch-ubuntu-desktop-on-google-cloud/
+
+2. Configure the forwarding rule to route the output port to the input ports.\
+FYI:
+<https://cloud.google.com/load-balancing/docs/protocol-forwarding>
+```
+<public ip address of master node:port> -> (map to) the ip addresss of nginx-thrift service:8080
+```
+```
+<public ip address of master node:port> -> (map to) 127.0.0.1:3000 (grafana dashboard)
+```
 ## Death Star Social media
 
 See the ip addresss of Social media App. (the nginx-thrift service on port 8080)
