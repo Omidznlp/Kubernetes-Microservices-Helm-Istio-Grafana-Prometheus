@@ -41,9 +41,9 @@ https://cloud.google.com/resource-manager/docs/creating-managing-projects
     2.2 Downloading and installing the gcloud CLI on your host. follow the link if you prefer to install gcloud cli on your own machine and run the gcloud commands:
     https://cloud.google.com/sdk/docs/install
 
-5. Click the "activate cloud shell" button, and then run the following commands in the shell.
+3. Click the "activate cloud shell" button, and then run the following commands in the shell.
 
-6. Set ProjectID in gcloud for example: kubernetes-342214.
+4. Set ProjectID in gcloud for example: kubernetes-342214.
 
     How to find Project ID:
     https://support.google.com/googleapi/answer/7014113?hl=en
@@ -57,7 +57,7 @@ https://cloud.google.com/resource-manager/docs/creating-managing-projects
     gcloud config set project kubernetes-342214
     ```
 
-7. Set the zone property in the compute section
+5. Set the zone property in the compute section
     ```
     gcloud config set compute/zone <zone name >
     ```
@@ -69,13 +69,13 @@ https://cloud.google.com/resource-manager/docs/creating-managing-projects
     https://cloud.google.com/compute/docs/regions-zones#:~:text=You%20can%20use%20the%20Google,a%20specific%20region%20or%20zone.
 
 
-8. Build the VPC
+6. Build the VPC
     ```
     gcloud compute networks create k8s-cluster --subnet-mode custom
     ```
 
 
-9. In the k8s-cluster VPC network, create the k8s-nodes subnet. To set IP ranges, go to the VPC network section on GCP to find subnets, or please follow the link to find your region's IP address. For example, the address of us-central1 is 10.128.0.0/20:
+7. In the k8s-cluster VPC network, create the k8s-nodes subnet. To set IP ranges, go to the VPC network section on GCP to find subnets, or please follow the link to find your region's IP address. For example, the address of us-central1 is 10.128.0.0/20:
 https://cloud.google.com/vpc/docs/subnets
     ```
     gcloud compute networks subnets create k8s-nodes --network k8s-cluster --range <your region's IP address>
@@ -85,7 +85,7 @@ https://cloud.google.com/vpc/docs/subnets
     gcloud compute networks subnets create k8s-nodes --network k8s-cluster --range 10.128.0.0/20
     ```
 
-10. Set a firewall rule that enables internal communication through TCP, UDP, ICMP, and IP.
+8. Set a firewall rule that enables internal communication through TCP, UDP, ICMP, and IP.
     ```
     gcloud compute firewall-rules create k8s-cluster-allow-internal \
       --allow tcp,udp,icmp,ipip \
@@ -100,7 +100,7 @@ https://cloud.google.com/vpc/docs/subnets
       --source-ranges 10.128.0.11/20
     ```
 
-11. Make a firewall rule that enables external SSH, ICMP, and HTTPS connections.
+9. Make a firewall rule that enables external SSH, ICMP, and HTTPS connections.
     ```
     gcloud compute firewall-rules create k8s-cluster-allow-external \
       --allow tcp:22,tcp:6443,icmp \
@@ -108,7 +108,7 @@ https://cloud.google.com/vpc/docs/subnets
       --source-ranges 0.0.0.0/0
     ```
 
-12. Create a Master Node Instance on GCP:
+10. Create a Master Node Instance on GCP:
     ```
     gcloud compute instances create master-node \
         --async \
@@ -123,7 +123,7 @@ https://cloud.google.com/vpc/docs/subnets
         --zone us-central1-a \
         --tags k8s-cluster,master-node,controller
     ```
-13. Create Two worker Instances on GCP:
+11. Create Two worker Instances on GCP:
     ```
     for i in 0 1; do
       gcloud compute instances create workernode-${i} \
@@ -364,7 +364,9 @@ kubeadm join 10.128.0.11:6443 --token qp794c.xbsi5nanw2u9sn9x \
 	--discovery-token-ca-cert-hash sha256:355a4ca26e908ddc939b8476377f17d1133a80132eab7db07655f6fa2bacd6e2 
 ```
 
-## Helm installation
+## Configurations of Master Node
+
+### Helm installation
 
 Head over to the Github helm release page and copy the Linux amd64 link for the required version.
 link:\
@@ -398,7 +400,7 @@ helm repo add stable https://charts.helm.sh/stable
 
 ```
 
-## Istio Installation
+### Istio Installation
 
 
 1.
@@ -438,22 +440,24 @@ For more information:
 How to set up Istio: \
 <https://istio.io/latest/docs/setup/getting-started/>
 
-## Grafana Installation
+### Grafana Installation
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/grafana.yaml
 ```
-## prometheus Installation
+### Prometheus Installation
 ```
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.13/samples/addons/prometheus.yaml
 ```
 
-## Download Microservices Repository
+### Download Microservices Repository
 
 ```
 git clone https://github.com/Omidznlp/DeathStarBench.git
 ```
-## Install Microservices via Helm
+
+### Install Microservices via Helm
+
 ```
 cd DeathStarBench/socialNetwork/helm-chart
 ```
@@ -462,7 +466,7 @@ cd DeathStarBench/socialNetwork/helm-chart
 helm install social-media socialnetwork/ --values socialnetwork/values.yaml
 ```
 
-## Remote Desktop for Master node
+### Remote Desktop for Master node
 
 There are two ways to run Dashboard in a browser:
 
@@ -479,7 +483,8 @@ FYI:
 ```
 <public ip address of master node:port> -> (map to) 127.0.0.1:3000 (grafana dashboard)
 ```
-## Death Star Social media
+
+### Death Star Social media
 
 See the ip addresss of Social media App. (the nginx-thrift service on port 8080)
 
@@ -492,7 +497,7 @@ kubectl get services
 
 ![deathstar_in](https://user-images.githubusercontent.com/87664653/162442086-dc9e63f1-e00b-4437-9574-08e6e8a9340f.png)
 
-## Run grafana Dashboard
+### Run grafana Dashboard
 Open the master node in remote desktop mode and
 run the following command.
 ```
@@ -503,7 +508,9 @@ istioctl dashboard grafana
 ```
 The Grafana dashboard appears in the browser automatically.
 
-## Running HTTP workload generator
+### Running HTTP workload generator
+
+#### Install Dependencies
 
 ```
 cd DeathStarBench/socialNetwork
@@ -519,10 +526,15 @@ cd wrk2
 make
 ```
 ```
+cd wrk2
+./wrk -D exp -t <num-threads> -c <num-conns> -d <duration> -L -s ./scripts/social-network/compose-post.lua http://localhost:8080/wrk2-api/post/compose -R <reqs-per-sec>
+```
+Example:
+```
 ./wrk -D exp -t 3 -c 3 -d 100 -L -s ./scripts/social-network/compose-post.lua http://10.110.246.16:8080/wrk2-api/post/compose -R 10
 ```
 
-## Monitoring 
+### Monitoring
 
 Choose the nginx-thrift service for monitoring.
 ![service](https://user-images.githubusercontent.com/87664653/162442391-971410ec-aa4b-4727-802c-c6c31afa5672.png)
@@ -530,7 +542,8 @@ Choose the nginx-thrift service for monitoring.
 ![grafana](https://user-images.githubusercontent.com/87664653/162441959-f56f1af6-e15e-444f-ac9c-8d24041d5d13.png)
 
 
-## Troubelshooting 
+## Troubelshooting
+
 If the following error happens in the helm install step:
 ```
 Error: INSTALLATION FAILED: failed post-install: warning: Hook post-install social-network/templates/mongodb-sharded-init/post-install-hook.yaml failed: Internal error occurred: failed calling webhook "namespace.sidecar-injector.istio.io": failed to call webhook: Post "https://istiod.istio-system.svc:443/inject?timeout=10s": context deadline exceeded
@@ -539,7 +552,7 @@ INSTALLATION FAILED
 main.newInstallCmd.func2
 
 ```
-Please insert following command:
+Please insert the following command:
 
 ```
 cd istio-1.13.2
