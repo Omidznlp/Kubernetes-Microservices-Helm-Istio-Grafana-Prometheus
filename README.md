@@ -348,6 +348,7 @@ kubeadm join 10.128.0.11:6443 --token qp794c.xbsi5nanw2u9sn9x \
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 3. To deploy the Network model
+
 ```
 sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 ```
@@ -366,7 +367,7 @@ kubeadm join 10.128.0.11:6443 --token qp794c.xbsi5nanw2u9sn9x \
 
 ## Configurations of Master Node
 
-### Helm installation
+### Helm Installation
 
 Head over to the Github helm release page and copy the Linux amd64 link for the required version.
 link:\
@@ -470,36 +471,37 @@ helm install social-media socialnetwork/ --values socialnetwork/values.yaml
 
 There are two ways to run Dashboard in a browser:
 
-1. On the master node, install Chrome Remote Desktop (I used this one). Please follow the "Install Chrome Remote Desktop on the VM instance" section at the following link to run Chrome Remote Desktop on the master node.
+1. On the master node, install Chrome Remote Desktop (I used this one). Please follow the "Install Chrome Remote Desktop on the VM instance" section at the following link to run Chrome Remote Desktop on the master node.\
  
 FYI: https://ubuntu.com/blog/launch-ubuntu-desktop-on-google-cloud/
 
 2. Configure the forwarding rule to route the output port to the input ports.\
 FYI:
 <https://cloud.google.com/load-balancing/docs/protocol-forwarding>
-```
-<public ip address of master node:port> -> (map to) the ip addresss of nginx-thrift service:8080
-```
-```
-<public ip address of master node:port> -> (map to) 127.0.0.1:3000 (grafana dashboard)
-```
+    ```
+    <public ip address of master node:port> -> (map to) the ip addresss of nginx-thrift service:8080
+    ```
+    ```
+    <public ip address of master node:port> -> (map to) 127.0.0.1:3000 (grafana dashboard)
+    ```
 
-### Death Star Social media
+### Run Death Star Social Media
 
-See the ip addresss of Social media App. (the nginx-thrift service on port 8080)
+See the ip addresss of Social Media App(the nginx-thrift service on port 8080). Now, you can visit <http://nginx-thrift_service_ip_address:8080> to see the front end.
 
 ```
 kubectl get services
 ```
+
 ![see ip address](https://user-images.githubusercontent.com/87664653/162442193-02fdc954-c576-446e-b69c-e0bdcce35492.png)
 
 ![deathstart](https://user-images.githubusercontent.com/87664653/162442072-f728e43c-e294-470c-bafb-ec0388c15488.png)
 
 ![deathstar_in](https://user-images.githubusercontent.com/87664653/162442086-dc9e63f1-e00b-4437-9574-08e6e8a9340f.png)
 
-### Run grafana Dashboard
-Open the master node in remote desktop mode and
-run the following command.
+### Run Grafana Dashboard
+
+Open the master node in remote desktop mode and run the following command.
 ```
 cd istio-1.13.2
 ```
@@ -508,7 +510,7 @@ istioctl dashboard grafana
 ```
 The Grafana dashboard appears in the browser automatically.
 
-### Running HTTP workload generator
+### Running HTTP Workload Generator
 
 #### Install Dependencies
 
